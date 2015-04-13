@@ -1,10 +1,9 @@
-/*
-  Program: Keypad Door Lock
-  Author: Michael Rouse
-	Email: michael@michaelrouse.net
-  Date: 8-9/2014
-  Description: Will allow for my dorm room door to be unlocked using a keypad
-*/
+//  Program: Keypad Door Lock
+//  Author: Michael Rouse
+//	Email: michael@michaelrouse.net
+//  Date: 8-9/2014
+//  Description: Will allow for my dorm room door to be unlocked using a keypad
+
 #include <Wire.h>
 #include <Keypad.h>
 #include <Servo.h> 
