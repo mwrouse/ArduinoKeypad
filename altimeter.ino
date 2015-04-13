@@ -1,9 +1,9 @@
-//  Program: Keypad Door Lock
-//  Author: Michael Rouse
-//	Email: michael@michaelrouse.net
-//  Date: 8-9/2014
-//  Description: Will allow for my dorm room door to be unlocked using a keypad
-
+/*
+  Program: Keypad Door Lock
+  Author: Michael Rouse
+  Date: 8-9/2014
+  Description: Will allow for my dorm room door to be unlocked using a keypad
+*/
 #include <Wire.h>
 #include <Keypad.h>
 #include <Servo.h> 
@@ -165,6 +165,7 @@ void keypadEvent(KeypadEvent key)
             Beep(900, 300);
             Beep(400, 500);
             
+            EEPROM_read(225, password);
             // Mark the new password
             for (int i = 0; i < strlen(newPasscode); i++)
             {
