@@ -8,6 +8,8 @@ My Documents\Arduino\libraries
 Once you upload the code to your Arduino, you need to comment out the line
 "#define DEFAULT_PASSWORD" or everytime the Arduino resets the password will change to "12345"
 
+Pictures can be seen on my blog at http://mrouse.xyz/9/arduino+keypad+door+lock
+
 # To submit a typed password
 1. Press the "#" Key
 
