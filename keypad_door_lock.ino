@@ -11,7 +11,7 @@
 #include "MEMORY.h"
 
 // Once you upload the code, uncomment this line, then re-upload the code. That will make the password "12345"
-#define DEFAULT_PASSWORD
+//#define DEFAULT_PASSWORD
 
 // Reset keypad if 30 seconds have passed without input (only after input)
 long lastPress = -1;
@@ -124,7 +124,7 @@ void keypadEvent(KeypadEvent key)
       // Enter Key (#)
       case '#':
         // Check if password is correct
-        if (comparePasswords())
+        if (comparePasswords() && !newPassword)
         {
           if (!confirmPassword)
           {
@@ -165,12 +165,20 @@ void keypadEvent(KeypadEvent key)
             Beep(900, 300);
             Beep(400, 500);
             
-            EEPROM_read(225, password);
+            //EEPROM_read(225, password);
             // Mark the new password
+            for (int i = 0; i < strlen(password); i++)
+            {
+              password[i] = '1';
+            }
+            
+            EEPROM_read(225, password);
+            
             for (int i = 0; i < strlen(newPasscode); i++)
             {
               password[i] = newPasscode[i];
             }
+            
           }
         }
         
@@ -312,3 +320,4 @@ bool comparePasswords()
 
 
 */
+
