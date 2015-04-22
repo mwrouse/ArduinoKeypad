@@ -1,7 +1,7 @@
 # ArduinoKeypad
 The Code for my Arduino Keypad
 
-Setting Up:
+# Setting Up
 Move the "MEMORY" folder into your Libraries folder for the Arduino
 My Documents\Arduino\libraries
 
