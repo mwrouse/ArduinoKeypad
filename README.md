@@ -5,6 +5,7 @@ Pictures can be seen on my blog at http://mrouse.xyz/9/arduino+keypad+door+lock
 
 # Setting Up
 Move the "MEMORY" folder into your Libraries folder
+
 Move the "Keypad" folder into your Libraries folder
 
 
