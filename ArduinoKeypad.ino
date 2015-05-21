@@ -4,7 +4,6 @@
   Date: 8/2014 - 5/2015
   Description: Will allow for my dorm room door to be unlocked using a keypad
 */
-#include <Wire.h>
 #include <Keypad.h>
 #include <Servo.h> 
 #include <EEPROM.h>
