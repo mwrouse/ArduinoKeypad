@@ -1,3 +1,6 @@
+#ifndef MEMORY_H
+#define MEMORY_H
+
 #include <EEPROM.h>
 #include <Arduino.h>
 
@@ -19,3 +22,5 @@ template <class T> int EEPROM_read(int ee, T& value)
           *p++ = EEPROM.read(ee++);
     return i;
 }
+
+#endif
