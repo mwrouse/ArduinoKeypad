@@ -1,9 +1,9 @@
-# ArduinoKeypad
+<h1>ArduinoKeypad</h1>
 The Code for my Arduino Keypad
 
 Pictures can be seen on my blog at http://mrouse.xyz/9/arduino+keypad+door+lock
 
-# Setting Up
+<h3>Setting Up</h3>
 Move the "MEMORY" folder into your Libraries folder
 
 Move the "Keypad" folder into your Libraries folder
@@ -11,22 +11,21 @@ Move the "Keypad" folder into your Libraries folder
 
 The Libraries folder is located in "My Documents\Arduino"
 
-Once you upload the code to your Arduino, you need to comment out the line
-"#define DEFAULT_PASSWORD" or everytime the Arduino resets the password will change to "12345"
+When you first turn on the Arduino, the password will be set to "12345"
 
 
-# Schematic
+<h3>Schematic</h3>
 ![The Schematic for the keypad](https://raw.githubusercontent.com/mwrouse/ArduinoKeypad/master/keypad_schem.jpg)
 
-# To submit a typed password
+<h3>Submit a typed password</h3>
 1. Press the "#" Key
 
 
-# To clear the current typed in password
+<h3>Clear the current typed in password</h3>
 1. Press the "*" Key or wait 15 seconds and it will clear
 
  
-# To change the passcode
+<h3>Change the password</h3>
 1. Enter "00000"
 2. Press the "*" key
 3. After the tone, enter in your current password (default is "12345")
