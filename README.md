@@ -1,4 +1,4 @@
-<h1>ArduinoKeypad</h1>
+<h1>Arduino Keypad</h1>
 The Code for my Arduino Keypad
 
 Pictures can be seen on my blog at http://mrouse.xyz/9/arduino+keypad+door+lock
