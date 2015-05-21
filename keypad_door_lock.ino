@@ -1,7 +1,7 @@
 /*
   Program: Keypad Door Lock
   Author: Michael Rouse
-  Date: 8-9/2014
+  Date: 8/2014 - 5/2015
   Description: Will allow for my dorm room door to be unlocked using a keypad
 */
 #include <Wire.h>
@@ -10,10 +10,7 @@
 #include <EEPROM.h>
 #include "MEMORY.h"
 
-// Once you upload the code, uncomment this line, then re-upload the code. That will make the password "12345"
-//#define DEFAULT_PASSWORD
-
-// Reset keypad if 30 seconds have passed without input (only after input)
+// Reset keypad if 15 seconds have passed without input (only after input)
 long lastPress = -1;
 const int RESET_DELAY = 15000;
 
@@ -22,13 +19,18 @@ int buzzerPin = 2;
 
 // Servo Variables
 Servo motor;
+const int SERVO_PIN = 10;
 int pos = 0;
 
 // Password Variables
-char password[15];
+const int PASSWORD_LENGTH = 15;
+char password[PASSWORD_LENGTH];
+char typedPassword[PASSWORD_LENGTH];
+int position = 0;
 String typedPassword = ""; 
 bool confirmPassword = false;
 bool newPassword = false;
+const int PASSWORD_LOCATION = 255;
 
 // Keypad variables
 char keyPressed;
@@ -37,11 +39,11 @@ const byte rows = 4;
 const byte cols = 3;
 
 char keys[rows][cols] = {
-  {'1','2','3'},
-  {'4','5','6'},
-  {'7','8','9'},
-  {'*','0','#'}
-};
+						  {'1','2','3'},
+						  {'4','5','6'},
+						  {'7','8','9'},
+						  {'*','0','#'}
+						};
 
 byte rowPins[rows] = {11,4,9,8};
 byte colPins[cols] = {7,6,5};
@@ -50,19 +52,17 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols); // Keypa
 
 // Initializer
 void setup(){
-  // Set the default password to 12345
-  #ifdef DEFAULT_PASSWORD
-    EEPROM_write(225, "12345");
-  #endif
+	// Check to see if it's the programs first time running
+	firstTime();
   
   // Read the password from memory
-  EEPROM_read(225, password);
+  EEPROM_read(PASSWORD_LOCATION, password);
   
   // Setup Keypad listener for beeps
   keypad.addEventListener(keypadEvent);
   
   // Setup the Servo Motor on Pin #10
-  motor.attach(10);
+  motor.attach(SERVO_PIN);
   motor.write(0);
   delay(500);
   motor.detach();
@@ -76,11 +76,12 @@ void loop(){
   // Get a key from the keypad
   keyPressed = keypad.getKey();
   
+	// Check to see if it is time to reset the password (after 15 seconds)
   if (lastPress > -1)
   {
     if (typedPassword != "" || confirmPassword || newPassword)
     {
-      if (millis() - lastPress >= RESET_DELAY)
+      if ((millis() - lastPress) >= RESET_DELAY)
       {
         // Timed out- reset everything
         confirmPassword = false;
@@ -105,7 +106,7 @@ void keypadEvent(KeypadEvent key)
       // Reset Key (*)
       case '*':
         // Check for the new passcode combo
-        if (typedPassword == "00000")
+        if (compare(typedPassword, "00000"))
         {
           // Have the user confirm the password
           confirmPassword = true;
@@ -113,7 +114,7 @@ void keypadEvent(KeypadEvent key)
           Beep(432, 500);
           
           // Clear the passcode
-          typedPassword = "";
+          clear(typedPassword);
           
         }else{
           // Reset the keypad
@@ -161,19 +162,19 @@ void keypadEvent(KeypadEvent key)
             typedPassword.toCharArray(newPasscode, 15);
             
             // Write the password to memory
-            EEPROM_write(225, newPasscode);
+            EEPROM_write(PASSWORD_LOCATION, newPasscode);
             
             Beep(900, 300);
             Beep(400, 500);
             
-            //EEPROM_read(225, password);
+            //EEPROM_read(PASSWORD_LOCATION, password);
             // Mark the new password
             for (int i = 0; i < strlen(password); i++)
             {
               password[i] = '1';
             }
             
-            EEPROM_read(225, password);
+            EEPROM_read(PASSWORD_LOCATION, password);
             
             for (int i = 0; i < strlen(newPasscode); i++)
             {
@@ -310,14 +311,47 @@ bool comparePasswords()
   return returnValue;
 }
 
+// compare to char arrays
+bool compare(char arr1[], char arr2[])
+{
+	return (strcmp(arr1, arr2) == 0);
+}
+
+// Clears a char array
+void clear(char array[])
+{
+	for(int i = 0; i < sizeof(array); i++)
+	{
+		array[i] = '';
+	}
+	return;
+}
+
+// Set the default password if it's the first time running
+void firstTime()
+{
+	int x;
+	EEPROM_read(0, x);
+	
+	if (x == -1)
+	{
+		// Set a default password 
+		EEPROM_write(PASSWORD_LOCATION, "12345");
+		EEPROM_write(0, 5); // Set the Memory location not equal to -1 so it won't erase the password every time the Arduino restarts
+	}
+	
+	return;
+}
+
 
 
 /* =================================================
                UPDATE LOG 
 ====================================================
-3/31/15--Added code so the keypad will reset after 15seconds of no keys being pressed once one has been pressed.
-4/01/15--Fixed bug where the code would reset after every keypress sometimes.
-4/12/15--Added the ability to update the password, it's saved in the Arduino's memory
+2015-03-31-Added code so the keypad will reset after 15seconds of no keys being pressed once one has been pressed.
+2015-04-01-Fixed bug where the code would reset after every keypress sometimes.
+2015-04-12-Added the ability to update the password, it's saved in the Arduino's memory
+2014-05-21-Changed the way the program checks to see if there is not a saved password; changed the typed password to a char array
 
 
 */
