@@ -85,7 +85,7 @@ void loop(){
   if (lastPress > -1)
   {
     // Make sure that a password has been typed
-    if (!compare(typedPassword, ""))// || confirmPassword || newPassword)
+    if (!compare(typedPassword, "") || confirmPassword || newPassword)
     {
       // Check to see if the RESET_DELAY has been reached
       if ((millis() - lastPress) >= RESET_DELAY)
