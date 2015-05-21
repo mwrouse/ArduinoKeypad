@@ -10,50 +10,55 @@
 #include <EEPROM.h>
 #include "MEMORY.h"
 
-// Reset keypad if 15 seconds have passed without input (only after input)
-long lastPress = -1;
-const int RESET_DELAY = 15000;
 
-// Pin for the buzzer
-int buzzerPin = 2;
+// Variables for auto-resetting the keypad
+const int RESET_DELAY = 15000; // Time until the keypad is reset after the last press (in milliseconds)
+long lastPress = -1;
+
+// Buzzer variables
+const int BUZZER = 2;
 
 // Servo Variables
+const int SERVO = 10; // Pin the servo is on
+int pos = 0; // Current position of the servo
 Servo motor;
-const int SERVO_PIN = 10;
-int pos = 0;
 
 // Password Variables
+const int PASSWORD_LOCATION = 255;
 const int PASSWORD_LENGTH = 15;
+
 char password[PASSWORD_LENGTH];
 char typedPassword[PASSWORD_LENGTH];
-int position = 0;
-String typedPassword = ""; 
+int passPosition = 0;
+
 bool confirmPassword = false;
 bool newPassword = false;
-const int PASSWORD_LOCATION = 255;
 
 // Keypad variables
-char keyPressed;
+const byte ROWS = 4;
+const byte COLS = 3;
 
-const byte rows = 4;
-const byte cols = 3;
+char keyPressed; // Variable for the last key to be pressed
 
-char keys[rows][cols] = {
+// Map of the keypad layout
+char keys[ROWS][COLS] = {
 						  {'1','2','3'},
 						  {'4','5','6'},
 						  {'7','8','9'},
 						  {'*','0','#'}
 						};
 
-byte rowPins[rows] = {11,4,9,8};
-byte colPins[cols] = {7,6,5};
+// Pins that each keypad row and column is connected to
+byte rowPins[ROWS] = {11, 4, 9, 8};
+byte colPins[COLS] = {7, 6, 5};
 
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols); // Keypad object
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); // Keypad object
+
 
 // Initializer
 void setup(){
-	// Check to see if it's the programs first time running
-	firstTime();
+  // Check to see if it's the programs first time running
+  firstTime();
   
   // Read the password from memory
   EEPROM_read(PASSWORD_LOCATION, password);
@@ -62,7 +67,7 @@ void setup(){
   keypad.addEventListener(keypadEvent);
   
   // Setup the Servo Motor on Pin #10
-  motor.attach(SERVO_PIN);
+  motor.attach(SERVO);
   motor.write(0);
   delay(500);
   motor.detach();
@@ -76,11 +81,13 @@ void loop(){
   // Get a key from the keypad
   keyPressed = keypad.getKey();
   
-	// Check to see if it is time to reset the password (after 15 seconds)
+  // Check to see if it is time to reset the password (after 15 seconds)
   if (lastPress > -1)
   {
-    if (typedPassword != "" || confirmPassword || newPassword)
+    // Make sure that a password has been typed
+    if (!compare(typedPassword, ""))// || confirmPassword || newPassword)
     {
+      // Check to see if the RESET_DELAY has been reached
       if ((millis() - lastPress) >= RESET_DELAY)
       {
         // Timed out- reset everything
@@ -108,13 +115,14 @@ void keypadEvent(KeypadEvent key)
         // Check for the new passcode combo
         if (compare(typedPassword, "00000"))
         {
+          // User wants to enter a new password, start this process
           // Have the user confirm the password
           confirmPassword = true;
           
           Beep(432, 500);
           
           // Clear the passcode
-          clear(typedPassword);
+          empty(typedPassword);
           
         }else{
           // Reset the keypad
@@ -125,30 +133,33 @@ void keypadEvent(KeypadEvent key)
           
       // Enter Key (#)
       case '#':
-        // Check if password is correct
-        if (comparePasswords() && !newPassword)
+        // Check if password is correct and the user is not typing in a new password
+        if (compare(typedPassword, password) && !newPassword)
         {
-          if (!confirmPassword)
-          {
-             // Correct password
-             accessGranted();
-             
-          }
-          else
+          // Check if the user is trying to confirm the password to change it
+          if (confirmPassword)
           {
             // User password confirmed
             confirmPassword = false;
             
             Beep(800, 300);
-            typedPassword = "";
+            empty(typedPassword); // Empty the typed password var
             newPassword = true; // Have the user enter in the new desired password
+             
+          }
+          else
+          {
+            // Correct password
+             accessGranted();        
           }
         
         }
         else
         {
+          // Password was wrong or the user is trying to enter a new password
           confirmPassword = false;
           
+          // Deny access if not setting a new password
           if (!newPassword)
           {
             // Incorrect password
@@ -156,13 +167,11 @@ void keypadEvent(KeypadEvent key)
           }
           else
           {
+            // Set the new password
             newPassword = false;
             
-            char newPasscode[15];
-            typedPassword.toCharArray(newPasscode, 15);
-            
             // Write the password to memory
-            EEPROM_write(PASSWORD_LOCATION, newPasscode);
+            EEPROM_write(PASSWORD_LOCATION, typedPassword);
             
             Beep(900, 300);
             Beep(400, 500);
@@ -176,14 +185,15 @@ void keypadEvent(KeypadEvent key)
             
             EEPROM_read(PASSWORD_LOCATION, password);
             
-            for (int i = 0; i < strlen(newPasscode); i++)
+            for (int i = 0; i < strlen(typedPassword); i++)
             {
-              password[i] = newPasscode[i];
+              password[i] = typedPassword[i];
             }
             
           }
         }
         
+        // Reset the keypad after submiting a password unless the user is trying to change the password
         if (!confirmPassword && !newPassword)
         {
           reset(); // Reset the keypad after it's been unlocked
@@ -191,19 +201,21 @@ void keypadEvent(KeypadEvent key)
         
         break;
          
-      // Any other key
+      // Any other key (a digit key)
       default:
-        if((typedPassword.length() + 1) < 15)
+        // Make sure that the password isn't too long
+        if((passPosition + 1) < PASSWORD_LENGTH)
         {
-          // Remember when the last key has been pressed 
+          // Remember when the last key has been pressed (for resetting the keypad automatically) 
           lastPress = millis();
           
           // Give tone feedback
           Beep(860, 100);
           
           // Add to running typed password
-          typedPassword = typedPassword + key;
-        
+          typedPassword[passPosition] = key;
+          
+          passPosition += 1;
         }
         else
         {
@@ -261,7 +273,8 @@ void accessDenied()
 void reset()
 {
   // Reset the typed password
-  typedPassword = "";
+  empty(typedPassword);
+  passPosition = 0;
   lastPress = -1;
 
   // Give beep feedback that the door has been reset
@@ -274,42 +287,16 @@ void reset()
 // Make a beep from the buzzer
 void Beep(int freq, int duration)
 {
-  tone(buzzerPin, freq, duration);
+  tone(BUZZER, freq, duration);
 }
 
 // Make the buzzer beep, wait until the beep has finished to continue
 void BeepDelay(int freq, int duration)
 {
-  tone(buzzerPin, freq, duration);
+  tone(BUZZER, freq, duration);
   delay(duration);
 }
 
-// Compare the passwords
-bool comparePasswords()
-{
-  char typedPass[50];
-  bool returnValue = false;
-  
-  typedPassword.toCharArray(typedPass, 15);
-  
-  // Start comparing
-  if (strlen(typedPass) == strlen(password))
-  {
-    returnValue = true;
-    
-    for (int i = 0; i < strlen(password); i++)
-    {
-      if (password[i] != typedPass[i])
-      {
-        // Not the same character
-        returnValue =  false;
-        break;
-      }
-    }
-  }
-  
-  return returnValue;
-}
 
 // compare to char arrays
 bool compare(char arr1[], char arr2[])
@@ -318,11 +305,11 @@ bool compare(char arr1[], char arr2[])
 }
 
 // Clears a char array
-void clear(char array[])
+void empty(char array[])
 {
 	for(int i = 0; i < sizeof(array); i++)
 	{
-		array[i] = '';
+		array[i] = '\0';
 	}
 	return;
 }
