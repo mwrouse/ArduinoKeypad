@@ -11,7 +11,7 @@ Move the "Keypad" folder into your Libraries folder
 
 The Libraries folder is located in "My Documents\Arduino"
 
-When you first turn on the Arduino, the password will be set to "12345"
+When you first turn on the Arduino, the password will be set to "12345" However, once you change it the password will remain that even if the keypad looses power and is turned back on.
 
 
 <h3>Schematic</h3>
