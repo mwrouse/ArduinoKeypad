@@ -4,8 +4,11 @@ The Code for my Arduino Keypad
 Pictures can be seen on my blog at http://mrouse.xyz/9/arduino+keypad+door+lock
 
 # Setting Up
-Move the "MEMORY" folder into your Libraries folder for the Arduino
-My Documents\Arduino\libraries
+Move the "MEMORY" folder into your Libraries folder
+Move the "Keypad" folder into your Libraries folder
+
+
+The Libraries folder is located in "My Documents\Arduino"
 
 Once you upload the code to your Arduino, you need to comment out the line
 "#define DEFAULT_PASSWORD" or everytime the Arduino resets the password will change to "12345"
