@@ -50,6 +50,7 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, rows, cols); // Keypa
 
 // Initializer
 void setup(){
+  // Set the default password to 12345
   #ifdef DEFAULT_PASSWORD
     EEPROM_write(225, "12345");
   #endif
