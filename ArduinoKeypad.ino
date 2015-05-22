@@ -25,9 +25,8 @@ Servo motor;
 // Password Variables
 const int PASSWORD_LOCATION = 255;
 const int PASSWORD_LENGTH = 15;
-
-char password[PASSWORD_LENGTH];
-char typedPassword[PASSWORD_LENGTH];
+char password[PASSWORD_LENGTH + 1];
+char typedPassword[PASSWORD_LENGTH + 1];
 int passPosition = 0;
 
 bool confirmPassword = false;
@@ -111,6 +110,9 @@ void keypadEvent(KeypadEvent key)
     {
       // Reset Key (*)
       case '*':
+        // Terminate the typedPassword NTCA
+        typedPassword[passPosition] = '\0';
+        
         // Check for the new passcode combo
         if (compare(typedPassword, "00000"))
         {
@@ -122,6 +124,7 @@ void keypadEvent(KeypadEvent key)
           
           // Clear the passcode
           empty(typedPassword);
+          passPosition = 0;
           
         }else{
           // Reset the keypad
@@ -132,6 +135,9 @@ void keypadEvent(KeypadEvent key)
           
       // Enter Key (#)
       case '#':
+        // Terminate the typedPassword NTCA
+        typedPassword[passPosition] = '\0';
+        
         // Check if password is correct and the user is not typing in a new password
         if (compare(typedPassword, password) && !newPassword)
         {
@@ -143,8 +149,9 @@ void keypadEvent(KeypadEvent key)
             
             Beep(800, 300);
             empty(typedPassword); // Empty the typed password var
+            passPosition = 0;
             newPassword = true; // Have the user enter in the new desired password
-             
+           
           }
           else
           {
@@ -157,7 +164,7 @@ void keypadEvent(KeypadEvent key)
         {
           // Password was wrong or the user is trying to enter a new password
           confirmPassword = false;
-          
+           
           // Deny access if not setting a new password
           if (!newPassword)
           {
@@ -166,29 +173,28 @@ void keypadEvent(KeypadEvent key)
           }
           else
           {
-            // Set the new password
-            newPassword = false;
-            
-            // Write the password to memory
-            EEPROM_write(PASSWORD_LOCATION, typedPassword);
-            
-            Beep(900, 300);
-            Beep(400, 500);
-            
-            //EEPROM_read(PASSWORD_LOCATION, password);
-            // Mark the new password
-            for (int i = 0; i < strlen(password); i++)
+            // Make sure that the password meets requirements (ot the password change combo, and 4 or more numbers
+            if(!compare(typedPassword, "00000") && (strlen(typedPassword) >= 4))
             {
-              password[i] = '1';
+              // Set the new password
+              newPassword = false;
+              
+              // Write the password to memory
+              EEPROM_write(PASSWORD_LOCATION, typedPassword);
+              
+              Beep(900, 300);
+              Beep(400, 500);
+              
+              // Clear the old password
+              empty(password);
+              
+              EEPROM_read(PASSWORD_LOCATION, password);
+             
+            }else{
+              newPassword = false;
+              confirmPassword = false;
+              reset();
             }
-            
-            EEPROM_read(PASSWORD_LOCATION, password);
-            
-            for (int i = 0; i < strlen(typedPassword); i++)
-            {
-              password[i] = typedPassword[i];
-            }
-            
           }
         }
         
@@ -203,7 +209,7 @@ void keypadEvent(KeypadEvent key)
       // Any other key (a digit key)
       default:
         // Make sure that the password isn't too long
-        if((passPosition + 1) < PASSWORD_LENGTH)
+        if(passPosition < PASSWORD_LENGTH)
         {
           // Remember when the last key has been pressed (for resetting the keypad automatically) 
           lastPress = millis();
@@ -211,10 +217,11 @@ void keypadEvent(KeypadEvent key)
           // Give tone feedback
           Beep(860, 100);
           
-          // Add to running typed password
+          // Add to running typed password NTCA
           typedPassword[passPosition] = key;
           
           passPosition += 1;
+          
         }
         else
         {
@@ -280,7 +287,7 @@ void reset()
   BeepDelay(800, 100);
   BeepDelay(700, 100);
   BeepDelay(500, 100);
- 
+  
 }
 
 // Make a beep from the buzzer
@@ -306,10 +313,15 @@ bool compare(char arr1[], char arr2[])
 // Clears a char array
 void empty(char array[])
 {
-	for(int i = 0; i < sizeof(array); i++)
+        Serial.print("Array to clear: ");
+        Serial.println(array);
+	for(int i = 0; i < PASSWORD_LENGTH; i++)
 	{
 		array[i] = '\0';
 	}
+
+        Serial.print("Cleared Array: ");
+        Serial.println(array);
 	return;
 }
 
@@ -321,8 +333,8 @@ void firstTime()
 	
 	if (x == -1)
 	{
-		// Set a default password 
-		EEPROM_write(PASSWORD_LOCATION, "12345");
+		// Set a default password
+		EEPROM_write(PASSWORD_LOCATION, "123456");
 		EEPROM_write(0, 5); // Set the Memory location not equal to -1 so it won't erase the password every time the Arduino restarts
 	}
 	
@@ -337,8 +349,8 @@ void firstTime()
 2015-03-31-Added code so the keypad will reset after 15seconds of no keys being pressed once one has been pressed.
 2015-04-01-Fixed bug where the code would reset after every keypress sometimes.
 2015-04-12-Added the ability to update the password, it's saved in the Arduino's memory
-2014-05-21-Changed the way the program checks to see if there is not a saved password; changed the typed password to a char array
-
+2015-05-21-Changed the way the program checks to see if there is not a saved password; changed the typed password to a char array
+2015-05-22-Worked with the NTCAs a little bit
 
 */
 
