@@ -313,15 +313,10 @@ bool compare(char arr1[], char arr2[])
 // Clears a char array
 void empty(char array[])
 {
-        Serial.print("Array to clear: ");
-        Serial.println(array);
 	for(int i = 0; i < PASSWORD_LENGTH; i++)
 	{
 		array[i] = '\0';
 	}
-
-        Serial.print("Cleared Array: ");
-        Serial.println(array);
 	return;
 }
 
