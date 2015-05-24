@@ -25,7 +25,7 @@ const int BUZZER = 2;
 
 // Servo Variables
 const int SERVO = 10; // Pin the servo is on
-int pos = 0; // Current position of the servo
+int pos = 0;          // Current position of the servo
 Servo motor;
 
 // Password Variables
