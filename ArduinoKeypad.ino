@@ -7,7 +7,7 @@
 #include <Keypad.h>
 #include <Servo.h> 
 #include <EEPROM.h>
-#include "MEMORY.h"
+#include <MEMORY.h>
 
 
 // Variables for auto-resetting the keypad
@@ -25,8 +25,10 @@ Servo motor;
 // Password Variables
 const int PASSWORD_LOCATION = 255;
 const int PASSWORD_LENGTH = 15;
+
 char password[PASSWORD_LENGTH + 1];
 char typedPassword[PASSWORD_LENGTH + 1];
+
 int passPosition = 0;
 
 bool confirmPassword = false;
@@ -40,11 +42,11 @@ char keyPressed; // Variable for the last key to be pressed
 
 // Map of the keypad layout
 char keys[ROWS][COLS] = {
-						  {'1','2','3'},
-						  {'4','5','6'},
-						  {'7','8','9'},
-						  {'*','0','#'}
-						};
+			{'1','2','3'},
+			{'4','5','6'},
+			{'7','8','9'},
+			{'*','0','#'}
+			};
 
 // Pins that each keypad row and column is connected to
 byte rowPins[ROWS] = {11, 4, 9, 8};
@@ -53,8 +55,11 @@ byte colPins[COLS] = {7, 6, 5};
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); // Keypad object
 
 
-// Initializer
+
+// Setup everything
 void setup(){
+  Serial.begin(9600);
+  
   // Check to see if it's the programs first time running
   firstTime();
   
@@ -76,24 +81,16 @@ void setup(){
 
 // Main Loop
 void loop(){
-  // Get a key from the keypad
-  keyPressed = keypad.getKey();
+  // Get a key from the keypad (if a key is pressed then the Arduino will run KeyPadEvent()
+  keypad.getKey();
   
-  // Check to see if it is time to reset the password (after 15 seconds)
-  if (lastPress > -1)
+  // Autoreset only if all the requirements are valid
+  if ((lastPress > -1) && (!compare(typedPassword, "") || confirmPassword || newPassword) && ((millis() - lastPress) >= RESET_DELAY))
   {
-    // Make sure that a password has been typed
-    if (!compare(typedPassword, "") || confirmPassword || newPassword)
-    {
-      // Check to see if the RESET_DELAY has been reached
-      if ((millis() - lastPress) >= RESET_DELAY)
-      {
-        // Timed out- reset everything
-        confirmPassword = false;
-        newPassword = false;
-        reset();
-      }
-    }
+    // Timed out- reset everything
+    confirmPassword = false;
+    newPassword = false;
+    reset();  
   }
   
   delay(10);
@@ -104,15 +101,15 @@ void keypadEvent(KeypadEvent key)
 {
   // Check if a key has been pressed
   if (keypad.getState() == PRESSED)
-  {        
+  {  
+    // Automatically terminate the string to the current position, this will be replaced if the key is a digit
+    typedPassword[passPosition] = '\0';
+     
     // Perform action based on which key was pressed
     switch (key)
-    {
+    {     
       // Reset Key (*)
       case '*':
-        // Terminate the typedPassword NTCA
-        typedPassword[passPosition] = '\0';
-        
         // Check for the new passcode combo
         if (compare(typedPassword, "00000"))
         {
@@ -135,9 +132,6 @@ void keypadEvent(KeypadEvent key)
           
       // Enter Key (#)
       case '#':
-        // Terminate the typedPassword NTCA
-        typedPassword[passPosition] = '\0';
-        
         // Check if password is correct and the user is not typing in a new password
         if (compare(typedPassword, password) && !newPassword)
         {
@@ -216,18 +210,18 @@ void keypadEvent(KeypadEvent key)
           
           // Give tone feedback
           Beep(860, 100);
-          
-          // Add to running typed password NTCA
-          typedPassword[passPosition] = key;
-          
-          passPosition += 1;
-          
         }
         else
         {
           // Password is too long, reset it
           reset();
         }
+        
+        // Add to running typed password NTCA
+        typedPassword[passPosition] = key;
+        passPosition += 1;
+        
+        Serial.println(typedPassword);
         
         break;
     }
@@ -307,33 +301,36 @@ void BeepDelay(int freq, int duration)
 // compare to char arrays
 bool compare(char arr1[], char arr2[])
 {
-	return (strcmp(arr1, arr2) == 0);
+  return (strcmp(arr1, arr2) == 0);
 }
 
 // Clears a char array
 void empty(char array[])
-{
-	for(int i = 0; i < PASSWORD_LENGTH; i++)
-	{
-		array[i] = '\0';
-	}
-	return;
+{       
+  for(int i = 0; i < PASSWORD_LENGTH; i++)
+  {
+    array[i] = '\0';
+  }
+
+  return;
 }
 
 // Set the default password if it's the first time running
 void firstTime()
 {
-	int x;
-	EEPROM_read(0, x);
+  int x;
+  EEPROM_read(0, x);
+  
+  // Check to see if that spot in EEPROM was blank
+  if (x == -1)
+  {
+    // Set a default password
+    EEPROM_write(PASSWORD_LOCATION, "123456");
+    
+    EEPROM_write(0, 5); // Set the Memory location not equal to -1 so it won't erase the password every time the Arduino restarts
+  }
 	
-	if (x == -1)
-	{
-		// Set a default password
-		EEPROM_write(PASSWORD_LOCATION, "123456");
-		EEPROM_write(0, 5); // Set the Memory location not equal to -1 so it won't erase the password every time the Arduino restarts
-	}
-	
-	return;
+  return;
 }
 
 
@@ -346,6 +343,7 @@ void firstTime()
 2015-04-12-Added the ability to update the password, it's saved in the Arduino's memory
 2015-05-21-Changed the way the program checks to see if there is not a saved password; changed the typed password to a char array
 2015-05-22-Worked with the NTCAs a little bit
+2015-05-24-Worked even more with the NTCAs
 
 */
 
