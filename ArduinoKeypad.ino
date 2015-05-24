@@ -58,8 +58,6 @@ Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); // Keypa
 
 // Setup everything
 void setup(){
-  Serial.begin(9600);
-  
   // Check to see if it's the programs first time running
   firstTime();
   
@@ -220,9 +218,7 @@ void keypadEvent(KeypadEvent key)
         // Add to running typed password NTCA
         typedPassword[passPosition] = key;
         passPosition += 1;
-        
-        Serial.println(typedPassword);
-        
+
         break;
     }
   }
