@@ -91,7 +91,7 @@ void loop(){
   // Autoreset only if all the requirements are valid
   if ((lastPress > -1) && (!compare(typedPassword, "") || confirmPassword || newPassword) && ((millis() - lastPress) >= RESET_DELAY))
   {
-    // Timed out- reset everything
+    // Timed out-reset everything
     confirmPassword = false;
     newPassword = false;
     reset();  
