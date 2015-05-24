@@ -1,8 +1,14 @@
 /*
-  Program: Keypad Door Lock
-  Author: Michael Rouse
-  Date: 8/2014 - 5/2015
-  Description: Will allow for my dorm room door to be unlocked using a keypad
+  Program......: Keypad Door Lock
+  Author.......: Michael Rouse
+  Date.........: 8/2014 - 5/2015
+  Description..: Will allow for my dorm room door to be unlocked using a keypad\
+  
+  Features.....: Default password is: 12345
+                 The password will be saved in EEPROM, so in the event of a power loss the password will still be the same when power is restored 
+                 The keypad has an onboard feature that will allow you to change the password
+                 Keypad will auto-reset and clear the typed password after 15 seconds if nothing has happened since the last keypress
+                 
 */
 #include <Keypad.h>
 #include <Servo.h> 
