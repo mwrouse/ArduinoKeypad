@@ -1,7 +1,7 @@
 <h1>Arduino Keypad</h1>
 The Code for my Arduino Keypad
 
-Pictures can be seen on my blog at http://mrouse.xyz/9/arduino+keypad+door+lock
+Pictures can be seen on my blog at http://mwrouse.com/blog/9/arduino+keypad+door+lock
 
 <h3>Setting Up</h3>
 Move the "MEMORY" folder into your Libraries folder
